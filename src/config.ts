@@ -4,7 +4,7 @@
  */
 
 import { http, createConfig } from 'wagmi'
-import { defineChain, getAddress, isAddress, type Address } from 'viem'
+import { defineChain, fallback, getAddress, isAddress, type Address } from 'viem'
 import { injected } from 'wagmi/connectors'
 import { getUsdc } from '@/onchain-facts'
 import { registerChain } from './tracing'
@@ -86,11 +86,17 @@ export const MIN_MAX_FEE_PER_GAS = 20_000_000_000n
 registerChain(arcTestnet.id, arcTestnet.rpcUrls.default.http[0])
 registerChain(arcMainnet.id, arcMainnet.rpcUrls.default.http[0])
 
+// Reads go through the same-origin proxy first (functions/rpc/[net].js) because some browsers get 503
+// from the public Arc RPC hosts on cross-origin requests; the public RPC is the fallback (also used in dev).
+const SAME_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
+const readTransport = (net: 'mainnet' | 'testnet', direct: string) =>
+  SAME_ORIGIN.startsWith('http') ? fallback([http(`${SAME_ORIGIN}/rpc/${net}`), http(direct)]) : http(direct)
+
 export const config = createConfig({
   chains: [arcTestnet, arcMainnet],
   connectors: [injected()],
   transports: {
-    [arcTestnet.id]: http(arcTestnet.rpcUrls.default.http[0]),
-    [arcMainnet.id]: http(arcMainnet.rpcUrls.default.http[0]),
+    [arcTestnet.id]: readTransport('testnet', arcTestnet.rpcUrls.default.http[0]),
+    [arcMainnet.id]: readTransport('mainnet', arcMainnet.rpcUrls.default.http[0]),
   },
 })

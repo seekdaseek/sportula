@@ -3,7 +3,7 @@ import { ConnectKitButton } from 'connectkit'
 import { Check, Circle, Loader2, X } from 'lucide-react'
 import { isAddress, isAddressEqual, parseEventLogs, type Address } from 'viem'
 import { useAccount, useReadContract } from 'wagmi'
-import { getBlock } from 'wagmi/actions'
+import { getBlock, readContract } from 'wagmi/actions'
 import { config } from '@/config'
 import { useTx, type TxState } from '@/hooks/useTx'
 import { describeError } from '@/lib/errors'
@@ -14,9 +14,10 @@ import { Field, Notice, NotDeployed, PrimaryButton, Section, TextInput, TxLink }
 
 const MAX_MINUTES = 525_600
 
-function StepRow({ n, label, state, chainId }: { n: number; label: string; state: TxState; chainId: 5042 | 5042002 }) {
-  const text =
-    state.phase === 'signing'
+function StepRow({ n, label, state, chainId, skipped }: { n: number; label: string; state: TxState; chainId: 5042 | 5042002; skipped?: boolean }) {
+  const text = skipped
+    ? 'Already approved, skipped'
+    : state.phase === 'signing'
       ? 'Confirm in your wallet'
       : state.phase === 'confirming'
         ? 'Waiting for confirmation'
@@ -28,7 +29,7 @@ function StepRow({ n, label, state, chainId }: { n: number; label: string; state
   return (
     <li className="flex items-center gap-3 py-2 text-sm">
       <span className="flex size-5 items-center justify-center">
-        {state.phase === 'success' ? (
+        {state.phase === 'success' || skipped ? (
           <Check className="size-4 text-good" aria-hidden />
         ) : state.phase === 'error' ? (
           <X className="size-4 text-bad" aria-hidden />
@@ -57,6 +58,7 @@ export function OpenTab({ onOpened }: { onOpened: (tabId: bigint) => void }) {
   const [minutes, setMinutes] = useState('10')
   const [formError, setFormError] = useState<string | undefined>()
   const [started, setStarted] = useState(false)
+  const [approveSkipped, setApproveSkipped] = useState(false)
   const [opened, setOpened] = useState<{ tabId: bigint; expiry: bigint } | undefined>()
   const approve = useTx()
   const open = useTx()
@@ -98,17 +100,35 @@ export function OpenTab({ onOpened }: { onOpened: (tabId: bigint) => void }) {
     const duration = BigInt(minutes.trim()) * 60n
 
     setStarted(true)
+    setApproveSkipped(false)
     approve.reset()
     open.reset()
 
-    const approved = await approve.run({
-      chainId,
-      address: network.usdc,
-      abi: ERC20_APPROVE_ABI,
-      functionName: 'approve',
-      args: [sportula, raw],
-    })
-    if (!approved) return
+    // Skip the approve transaction when the existing allowance already covers the amount.
+    let allowance = 0n
+    try {
+      allowance = await readContract(config, {
+        chainId,
+        address: network.usdc,
+        abi: ERC20_APPROVE_ABI,
+        functionName: 'allowance',
+        args: [account, sportula],
+      })
+    } catch {
+      allowance = 0n
+    }
+    const skipApprove = allowance >= raw
+    setApproveSkipped(skipApprove)
+    if (!skipApprove) {
+      const approved = await approve.run({
+        chainId,
+        address: network.usdc,
+        abi: ERC20_APPROVE_ABI,
+        functionName: 'approve',
+        args: [sportula, raw],
+      })
+      if (!approved) return
+    }
 
     // The countdown starts now, from chain time, so slow wallet prompts do not eat into it.
     let expiry: bigint
@@ -187,7 +207,7 @@ export function OpenTab({ onOpened }: { onOpened: (tabId: bigint) => void }) {
           {started ? (
             <>
               <ol className="divide-y divide-line rounded-xl border border-line bg-bg px-3">
-                <StepRow n={1} label="Approve USDC" state={approve.state} chainId={chainId} />
+                <StepRow n={1} label="Approve USDC" state={approve.state} chainId={chainId} skipped={approveSkipped} />
                 <StepRow n={2} label="Open tab" state={open.state} chainId={chainId} />
               </ol>
               {approve.state.phase === 'error' ? <Notice tone="error">{approve.state.error}</Notice> : null}
