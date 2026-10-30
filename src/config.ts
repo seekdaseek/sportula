@@ -33,10 +33,10 @@ export const arcMainnet = defineChain({
 export const SPORTULA_TESTNET_ADDRESS = '0x0042e23fc5fa216e9491fbc26addeab66bd209f2'
 
 /**
- * SET THIS after deploying Sportula to Arc Mainnet. While it is empty the app shows
+ * Sportula on Arc Mainnet. If this is ever empty the app shows
  * "Contract not deployed on this network" on mainnet instead of sending any transaction.
  */
-export const SPORTULA_MAINNET_ADDRESS = ''
+export const SPORTULA_MAINNET_ADDRESS = '0x551503Bb787ab02Fbade10CdBdAB18c6A8015B37'
 
 function asAddress(raw: string): Address | undefined {
   return isAddress(raw, { strict: false }) ? getAddress(raw) : undefined

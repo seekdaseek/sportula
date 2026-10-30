@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { useAccount, useSwitchChain } from 'wagmi'
 import type { Address } from 'viem'
 import {
-  ARC_TESTNET_ID,
+  ARC_MAINNET_ID,
   SPORTULA_ADDRESS,
   getNetwork,
   type NetworkInfo,
@@ -28,7 +28,7 @@ interface NetworkState {
 const NetworkContext = createContext<NetworkState | null>(null)
 
 export function NetworkProvider({ children }: { children: ReactNode }) {
-  const [chainId, setChainId] = useState<SupportedChainId>(ARC_TESTNET_ID)
+  const [chainId, setChainId] = useState<SupportedChainId>(ARC_MAINNET_ID)
   const [switchError, setSwitchError] = useState<string | undefined>()
   const { address, chainId: walletChainId, isConnected } = useAccount()
   const { switchChainAsync, isPending } = useSwitchChain()
