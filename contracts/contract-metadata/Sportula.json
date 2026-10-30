@@ -1,0 +1,572 @@
+{
+  "contractAddress": "0x0042e23fc5fa216e9491fbc26addeab66bd209f2",
+  "network": "ARC-TESTNET",
+  "deployerWalletId": "3c2464b2-8369-52e2-a782-800bbeca5396",
+  "contract_code_path": "/home/user/app/contracts/Sportula.sol",
+  "contract_compiled_code_path": "/home/user/app/contracts/out/Sportula.sol/Sportula.json",
+  "contract_network_and_links": {
+    "Arc Testnet": "https://explorer.testnet.arc.io/address/0x0042e23fc5fa216e9491fbc26addeab66bd209f2"
+  },
+  "contract_deployments": [
+    {
+      "chain": "Arc Testnet",
+      "address": "0x0042e23fc5fa216e9491fbc26addeab66bd209f2",
+      "explorerUrl": "https://explorer.testnet.arc.io/address/0x0042e23fc5fa216e9491fbc26addeab66bd209f2",
+      "txHash": "0xd3257212722827758d54d0b5ca6b4328edc6e86a9007e20fa348de34efdbd4b0",
+      "deployedAt": "2026-10-30T17:25:49.590Z"
+    }
+  ],
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "usdc_",
+          "type": "address",
+          "internalType": "contract IERC20"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "DOMAIN_SEPARATOR",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "USDC",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract IERC20"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "VOUCHER_TYPEHASH",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "claim",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "cumulativeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "signature",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "eip712Domain",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "fields",
+          "type": "bytes1",
+          "internalType": "bytes1"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "verifyingContract",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "salt",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "extensions",
+          "type": "uint256[]",
+          "internalType": "uint256[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "nextTabId",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "open",
+      "inputs": [
+        {
+          "name": "provider",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiry",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "tab",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "payer",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "provider",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "deposit",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "claimed",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiry",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "withdrawn",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "voucherDigest",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "cumulativeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "withdraw",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "Claimed",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "provider",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "paid",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "cumulativeClaimed",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "EIP712DomainChanged",
+      "inputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "TabOpened",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "payer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "provider",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiry",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Withdrawn",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "payer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AlreadyWithdrawn",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ExceedsDeposit",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "cumulativeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "deposit",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidExpiry",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InvalidShortString",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InvalidSignature",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotIncreasing",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "cumulativeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "claimed",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotPayer",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotProvider",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "NotYetExpired",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiry",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ProviderIsPayer",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ReentrancyGuardReentrantCall",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SafeERC20FailedOperation",
+      "inputs": [
+        {
+          "name": "token",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "StringTooLong",
+      "inputs": [
+        {
+          "name": "str",
+          "type": "string",
+          "internalType": "string"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TabClosed",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TabExpired",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expiry",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "TabNotFound",
+      "inputs": [
+        {
+          "name": "tabId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "UnexpectedReceivedAmount",
+      "inputs": [
+        {
+          "name": "expected",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "received",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "ZeroAmount",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZeroProvider",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "ZeroUSDC",
+      "inputs": []
+    }
+  ]
+}
