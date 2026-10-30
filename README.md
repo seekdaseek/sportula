@@ -13,6 +13,27 @@ Mainnet deploy transaction: https://explorer.arc.io/tx/0x24d2fab63fb88820b2cf38f
 
 USDC is the ERC-20 interface of Arc's native USDC at `0x3600000000000000000000000000000000000000` (6 decimals), passed to the constructor.
 
+## Mainnet proof
+
+Real USDC on Arc Mainnet through the contract and the live app at https://sportula.pages.dev/.
+
+- Contract (source verified, exact match): https://explorer.arc.io/address/0x551503Bb787ab02Fbade10CdBdAB18c6A8015B37
+- Deploy: https://explorer.arc.io/tx/0x24d2fab63fb88820b2cf38f154d0b7cd149a1799723e80216bdb5ab310d8d475
+
+Tab #1, opened with 0.50 USDC and recovered by the payer after expiry (the first claim attempt was refused before any transaction because the voucher had been signed by the wrong wallet account; the app now checks the signer):
+
+- Open: https://explorer.arc.io/tx/0x42dc2538f88507a3bb7a7d1b99c32902a7ea23e7d2631bdbc0d63cf79ace6b28
+- Withdraw 0.50: https://explorer.arc.io/tx/0x3b6c1f455f5b31afe0214047647c6c6caa0d6ae36ace845bc41bcb99d58847a0
+
+Tab #2, the full cycle, 0.50 USDC deposited, 0.10 claimed with a payer-signed voucher, 0.40 withdrawn after expiry:
+
+- Approve: https://explorer.arc.io/tx/0x7af854cfe603a6ae11d0d2669e072907153a617ba6fe61941537820ffdfaf62c
+- Open: https://explorer.arc.io/tx/0x8ee57eb4a5fb830ab9f833dd209b2995517a184b261aad2c15caa17435206d52
+- Claim 0.10: https://explorer.arc.io/tx/0x31b13deafc24e49ee4405526a9ae6f50c4175d49752c9a96dd447ed76c7faab6
+- Withdraw 0.40: https://explorer.arc.io/tx/0x1e92a7a1f50a040726851da1f8c7f112aa1316d233d8586d729ffdee070006dd
+
+The claim transaction's "to" is MetaMask's delegation manager, not Sportula, because MetaMask upgraded the provider account to its EIP-7702 smart account for that call; the Sportula `claim` and its `Claimed` event are inside the transaction.
+
 ## How it works
 
 1. `open(provider, amount, expiry)`: the payer deposits USDC for one provider until a unix timestamp.

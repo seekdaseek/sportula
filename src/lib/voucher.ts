@@ -51,3 +51,17 @@ export async function checkVoucherSigner(
   const signer = await recoverVoucherSigner(chainId, contract, tabId, cumulativeAmount, signature)
   return signer && isAddressEqual(signer, expectedPayer) ? { ok: true } : { ok: false, signer }
 }
+
+export type ClaimState = 'claimable' | 'already-claimed' | 'exceeds-deposit' | 'not-provider'
+
+/** What the Claim box should do for a pasted voucher, given the tab as read from the chain. */
+export function claimState(
+  tab: { provider: Address; deposit: bigint; claimed: bigint },
+  cumulativeAmount: bigint,
+  connected: Address | undefined,
+): ClaimState {
+  if (cumulativeAmount <= tab.claimed) return 'already-claimed'
+  if (cumulativeAmount > tab.deposit) return 'exceeds-deposit'
+  if (connected && !isAddressEqual(tab.provider, connected)) return 'not-provider'
+  return 'claimable'
+}

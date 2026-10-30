@@ -4,7 +4,7 @@
 //      npx tsx scripts/voucher-fork-test.ts
 import { createPublicClient, createWalletClient, defineChain, http, parseAbi, parseEventLogs, isAddressEqual, type Address, type Hex } from 'viem'
 import { mnemonicToAccount } from 'viem/accounts'
-import { checkVoucherSigner, voucherDigestLocal, voucherTypedData } from '../src/lib/voucher'
+import { checkVoucherSigner, claimState, voucherDigestLocal, voucherTypedData } from '../src/lib/voucher'
 
 const RPC = process.env.FORK_RPC ?? 'http://127.0.0.1:8546'
 const SPORTULA: Address = (process.env.SPORTULA as Address) ?? '0x551503Bb787ab02Fbade10CdBdAB18c6A8015B37'
@@ -83,6 +83,9 @@ try {
 }
 check('contract rejects the provider-signed voucher with InvalidSignature', rejected)
 
+const tabBefore = await pub.readContract({ address: SPORTULA, abi, functionName: 'tab', args: [tabId] })
+check('Claim box: fresh voucher is claimable by the provider', claimState({ provider: tabBefore[1], deposit: tabBefore[2], claimed: tabBefore[3] }, CLAIM, provider.address) === 'claimable')
+check('Claim box: fresh voucher is not claimable by the payer wallet', claimState({ provider: tabBefore[1], deposit: tabBefore[2], claimed: tabBefore[3] }, CLAIM, payer.address) === 'not-provider')
 // USDC is also the gas token on Arc, so compare 18-decimal native balances and add the gas back.
 const nativeBefore = await pub.getBalance({ address: provider.address })
 const claimReceipt = await send(await walletFor(provider).writeContract({ address: SPORTULA, abi, functionName: 'claim', args: [tabId, CLAIM, signature], ...GAS }))
@@ -99,6 +102,9 @@ try {
   replay = String(e).includes('NotIncreasing')
 }
 check('replaying the same voucher is refused (NotIncreasing)', replay)
+const tabAfter = await pub.readContract({ address: SPORTULA, abi, functionName: 'tab', args: [tabId] })
+const afterState = claimState({ provider: tabAfter[1], deposit: tabAfter[2], claimed: tabAfter[3] }, CLAIM, payer.address)
+check('Claim box: the claimed voucher now reads as already-claimed, even from the payer wallet', afterState === 'already-claimed')
 
 await rpc('evm_increaseTime', [1000])
 await rpc('evm_mine', [])

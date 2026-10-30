@@ -7,7 +7,7 @@ import { useNow } from '@/hooks/useNow'
 import { useTab } from '@/hooks/useTab'
 import { useTx } from '@/hooks/useTx'
 import { SPORTULA_ABI, fmtUsdc, formatDuration, parseTabId, shortAddress } from '@/lib/sportula'
-import { checkVoucherSigner } from '@/lib/voucher'
+import { checkVoucherSigner, claimState } from '@/lib/voucher'
 import { useNetwork } from '@/network'
 import { Field, NotDeployed, Notice, PrimaryButton, Section, TextInput, TxStatus } from './ui'
 
@@ -82,7 +82,7 @@ function ConnectButton() {
 }
 
 function Claim() {
-  const { chainId, sportula, connected } = useNetwork()
+  const { chainId, sportula, account, connected } = useNetwork()
   const queryClient = useQueryClient()
   const [text, setText] = useState('')
   const tx = useTx()
@@ -126,6 +126,9 @@ function Claim() {
 
   const paid = amountFromReceipt(tx.state.receipt, sportula ?? '0x', 'Claimed')
   const pending = voucher && tab && found ? voucher.cumulativeAmount - tab.claimed : undefined
+  const state = voucher && tab && found ? claimState(tab, voucher.cumulativeAmount, account) : undefined
+  const alreadyClaimed = state === 'already-claimed'
+  const notProvider = state === 'not-provider'
 
   return (
     <div className="space-y-3 rounded-xl border border-line bg-bg p-4">
@@ -133,7 +136,10 @@ function Claim() {
       <Field label="Voucher JSON" hint="Paste the voucher the payer sent you. You must be connected as the tab's provider.">
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value)
+            tx.reset()
+          }}
           rows={6}
           spellCheck={false}
           placeholder='{"chainId": 5042002, "contract": "0x…", "tabId": 1, "cumulativeAmount": "1000000", "signature": "0x…"}'
@@ -142,14 +148,18 @@ function Claim() {
       </Field>
       {parsed?.error ? <Notice tone="error">{parsed.error}</Notice> : null}
       {signerWarning ? <Notice tone="error">{signerWarning}</Notice> : null}
+      {alreadyClaimed ? <Notice tone="info">This voucher is already claimed.</Notice> : null}
+      {!alreadyClaimed && notProvider && tab ? (
+        <Notice tone="warn">Only the provider of this tab can claim. Switch to {shortAddress(tab.provider)} in your wallet.</Notice>
+      ) : null}
       {voucher ? (
         <p className="text-sm text-mute">
           Tab #{String(voucher.tabId)}, cumulative {fmtUsdc(voucher.cumulativeAmount)} USDC
-          {pending !== undefined && pending > 0n ? <> (you would receive {fmtUsdc(pending)} USDC)</> : null}.
+          {pending !== undefined && pending > 0n && !alreadyClaimed ? <> (you would receive {fmtUsdc(pending)} USDC)</> : null}.
         </p>
       ) : null}
       {connected ? (
-        <PrimaryButton type="button" busy={tx.busy} disabled={!voucher || signerWarning !== undefined} onClick={() => void claim()}>
+        <PrimaryButton type="button" busy={tx.busy} disabled={!voucher || signerWarning !== undefined || alreadyClaimed || notProvider} onClick={() => void claim()}>
           Claim from tab
         </PrimaryButton>
       ) : (
