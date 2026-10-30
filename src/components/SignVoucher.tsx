@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { ConnectKitButton } from 'connectkit'
-import { hashTypedData, isAddressEqual, type Hex } from 'viem'
+import { isAddressEqual, type Hex } from 'viem'
 import { readContract, signTypedData } from 'wagmi/actions'
 import { config } from '@/config'
 import { useTab } from '@/hooks/useTab'
 import { describeError } from '@/lib/errors'
-import { SPORTULA_ABI, VOUCHER_TYPES, fmtUsdc, parseTabId } from '@/lib/sportula'
+import { SPORTULA_ABI, fmtUsdc, parseTabId, shortAddress } from '@/lib/sportula'
+import { checkVoucherSigner, voucherDigestLocal, voucherTypedData } from '@/lib/voucher'
 import { ensureWalletChain } from '@/lib/tx'
 import { parseUsdc } from '@/onchain-money'
 import { useNetwork } from '@/network'
@@ -37,7 +38,7 @@ export function SignVoucher({ defaultTabId }: { defaultTabId?: bigint }) {
   const warnings: string[] = []
   if (tab && found && amount !== undefined) {
     if (account && !isAddressEqual(tab.payer, account)) {
-      warnings.push('Your connected wallet is not the payer of this tab, so the contract will reject this voucher.')
+      warnings.push(`Your connected wallet ${shortAddress(account)} is not the payer ${shortAddress(tab.payer)} of this tab. Signing asks your wallet for the payer account; if that account is not connected to this site the signature is refused.`)
     }
     if (amount > tab.deposit) warnings.push(`This amount is more than the ${fmtUsdc(tab.deposit)} USDC deposited, so it cannot be claimed.`)
     if (amount <= tab.claimed) warnings.push(`${fmtUsdc(tab.claimed)} USDC was already claimed. A new voucher must be higher than that.`)
@@ -50,19 +51,25 @@ export function SignVoucher({ defaultTabId }: { defaultTabId?: bigint }) {
     setError(undefined)
     setResult(undefined)
     try {
-      const signer = await ensureWalletChain(chainId)
-      const message = { tabId, cumulativeAmount: amount }
-      const domain = { name: 'Sportula', version: '1', chainId, verifyingContract: sportula } as const
-      const signature: Hex = await signTypedData(config, {
-        account: signer,
-        domain,
-        types: VOUCHER_TYPES,
-        primaryType: 'Voucher',
-        message,
-      })
+      const connectedAccount = await ensureWalletChain(chainId)
+      // Ask the wallet to sign as the tab's payer, not just whichever account is first in the connection.
+      const signer = tab && found ? tab.payer : connectedAccount
+      const typed = voucherTypedData(chainId, sportula, tabId, amount)
+      const message = typed.message
+      const signature: Hex = await signTypedData(config, { account: signer, ...typed })
+
+      // Never show a voucher the contract would reject: it must recover to the tab's payer.
+      if (tab && found) {
+        const check = await checkVoucherSigner(chainId, sportula, tabId, amount, signature, tab.payer)
+        if (!check.ok) {
+          throw new Error(
+            `That signature was made by ${check.signer ? shortAddress(check.signer) : 'an unknown account'}, but the payer of tab #${String(tabId)} is ${shortAddress(tab.payer)}. In MetaMask select the payer account, reconnect it to this site and sign again.`,
+          )
+        }
+      }
 
       // Cross-check what we signed against the contract's own digest before showing it.
-      const local = hashTypedData({ domain, types: VOUCHER_TYPES, primaryType: 'Voucher', message })
+      const local = voucherDigestLocal(chainId, sportula, message.tabId, message.cumulativeAmount)
       let digestOk: boolean | undefined
       try {
         const onchain = await readContract(config, {

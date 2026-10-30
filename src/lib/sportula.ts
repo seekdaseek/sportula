@@ -35,12 +35,7 @@ export const ERC20_APPROVE_ABI = [
   },
 ] as const
 
-export const VOUCHER_TYPES = {
-  Voucher: [
-    { name: 'tabId', type: 'uint256' },
-    { name: 'cumulativeAmount', type: 'uint256' },
-  ],
-} as const
+export { VOUCHER_TYPES } from './voucher'
 
 export const ZERO_ADDRESS: Address = '0x0000000000000000000000000000000000000000'
 const UINT256_MAX = (1n << 256n) - 1n

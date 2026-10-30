@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectKitButton } from 'connectkit'
 import { useQueryClient } from '@tanstack/react-query'
 import { isAddress, isAddressEqual, parseEventLogs, type Address, type Hex, type TransactionReceipt } from 'viem'
@@ -6,7 +6,8 @@ import { getNetwork } from '@/config'
 import { useNow } from '@/hooks/useNow'
 import { useTab } from '@/hooks/useTab'
 import { useTx } from '@/hooks/useTx'
-import { SPORTULA_ABI, fmtUsdc, formatDuration, parseTabId } from '@/lib/sportula'
+import { SPORTULA_ABI, fmtUsdc, formatDuration, parseTabId, shortAddress } from '@/lib/sportula'
+import { checkVoucherSigner } from '@/lib/voucher'
 import { useNetwork } from '@/network'
 import { Field, NotDeployed, Notice, PrimaryButton, Section, TextInput, TxStatus } from './ui'
 
@@ -88,6 +89,28 @@ function Claim() {
   const parsed = sportula && text.trim() !== '' ? parseVoucher(text, chainId, sportula) : undefined
   const voucher = parsed?.voucher
   const { tab, found } = useTab(chainId, voucher?.tabId)
+  const [signerWarning, setSignerWarning] = useState<string | undefined>()
+  const vTabId = voucher?.tabId
+  const vAmount = voucher?.cumulativeAmount
+  const vSignature = voucher?.signature
+  const payer = tab && found ? tab.payer : undefined
+
+  // Catch a voucher signed by the wrong account before any transaction is attempted.
+  useEffect(() => {
+    setSignerWarning(undefined)
+    if (!sportula || vTabId === undefined || vAmount === undefined || !vSignature || !payer) return
+    let live = true
+    void checkVoucherSigner(chainId, sportula, vTabId, vAmount, vSignature, payer).then((check) => {
+      if (live && !check.ok) {
+        setSignerWarning(
+          `This voucher was signed by ${check.signer ? shortAddress(check.signer) : 'an unknown account'}, but the payer of tab #${String(vTabId)} is ${shortAddress(payer)}. The payer must sign it again with the payer account.`,
+        )
+      }
+    })
+    return () => {
+      live = false
+    }
+  }, [chainId, sportula, vTabId, vAmount, vSignature, payer])
 
   const claim = async () => {
     if (!sportula || !voucher) return
@@ -118,6 +141,7 @@ function Claim() {
         />
       </Field>
       {parsed?.error ? <Notice tone="error">{parsed.error}</Notice> : null}
+      {signerWarning ? <Notice tone="error">{signerWarning}</Notice> : null}
       {voucher ? (
         <p className="text-sm text-mute">
           Tab #{String(voucher.tabId)}, cumulative {fmtUsdc(voucher.cumulativeAmount)} USDC
@@ -125,7 +149,7 @@ function Claim() {
         </p>
       ) : null}
       {connected ? (
-        <PrimaryButton type="button" busy={tx.busy} disabled={!voucher} onClick={() => void claim()}>
+        <PrimaryButton type="button" busy={tx.busy} disabled={!voucher || signerWarning !== undefined} onClick={() => void claim()}>
           Claim from tab
         </PrimaryButton>
       ) : (
